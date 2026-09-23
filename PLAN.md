@@ -21,8 +21,8 @@ Jotunn. The repo layout, build scripts and publicizer setup are the same as Cool
 - Large achievements in the tracker show the overall bar plus the 4 unfinished objectives
   closest to done, then "+N more".
 - Completed pins auto-unpin about 10 s after the unlock popup.
-- The tracker defaults to top-left under the status effects, with its position configurable in
-  ConfigurationManager.
+- The tracker defaults to top-right, under the status-effect icons, which sit beside the
+  minimap. Its position is configurable in ConfigurationManager.
 - The details panel is populated by our own code (§2.2), not patched row by row after vanilla.
 
 ---
@@ -177,11 +177,15 @@ record AchievementProgress(Achievement A, IReadOnlyList<Objective> Objectives,
 - **Large achievements:** show at most `MaxRowsPerAchievement` (default 4) *incomplete*
   objectives, closest to done first, then a "+208 more" line. The overall bar still covers
   everything. Small achievements (≤ 4 objectives) show all rows including completed ones.
-- Position: config `Anchor` (`TopLeft` default, `TopRight`, `LeftMiddle`, `RightMiddle`,
-  `BottomLeft`, `BottomRight`), `Offset` (x, y), `Scale`, `Opacity`, all editable live in
-  ConfigurationManager. At `TopLeft` the tracker sits under the status-effect list and follows
-  its height (`Hud.m_statusEffectListRoot`), so a long row of meads pushes it down instead of
-  overlapping it. Hidden while the inventory or achievements panel is open (config), and when
+- Position: config `Anchor` (`UnderStatusEffects` default, `TopLeft`, `TopRight`,
+  `LeftMiddle`, `RightMiddle`, `BottomLeft`, `BottomRight`), `Offset` (x, y), `Scale` and
+  `Opacity`, all editable live in ConfigurationManager.
+  The status-effect icons are **not** top-left. `Hud.UpdateStatusEffects` places each one at
+  `x = -4 - col × m_statusEffectSpacing (55)`, `y = -row × 55`, with `m_effectsPerRow = 7`, so
+  they run leftward from `m_statusEffectListRoot`, beside the minimap at the top right. The
+  tracker parents its right edge to that root's world position and sits
+  `rows × 55 + 8` px below it, so a second row of meads pushes it down instead of overlapping
+  it. Hidden while the inventory or achievements panel is open (config), and when
   nothing is pinned.
 - **Updates:** the §1.3 postfixes set a dirty flag. The tracker recomputes pinned achievements
   at most every 0.25 s while dirty and never otherwise. No per-frame work beyond checking one bool.
@@ -198,10 +202,9 @@ record AchievementProgress(Achievement A, IReadOnlyList<Objective> Objectives,
 - Previous values are snapshotted in memory at login, so loading a character never replays old
   toasts. If one stat event crosses several thresholds or completes several objectives, they
   are merged into a single toast.
-- Rendering: `MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft, text)`, which is
-  vanilla-styled, queues itself and never overlaps. It shares the top-left corner with the
-  tracker's default spot, so the tracker shifts down while a message is showing. If that looks
-  messy on the rig, config `ToastPosition` can switch to `Center`.
+- Rendering: `MessageHud.instance.ShowMessage(MessageHud.MessageType.TopLeft, text)`, the
+  game's own pickup-message feed at the top left, away from the tracker. It is vanilla-styled
+  and queues itself. Config `ToastPosition` can switch to `Center`.
 
 ### 2.6 Config (BepInEx, `com.jumpingmushroom.milestones.cfg`)
 
@@ -231,8 +234,12 @@ Milestones/
   lib/            (gitignored; pulled from the rig)
   src/Milestones/
     Plugin.cs  PluginConfig.cs  ConfigurationManagerAttributes.cs  Milestones.csproj
-    Core/{Progress.cs, Pins.cs, StatEvents.cs, CheatState.cs}
-    Patches/{DetailsPatches.cs, StatPatches.cs, ListPatches.cs, ConsolePatches.cs}
+    Core/Model/{Objective.cs, ProgressCalc.cs, PinList.cs, ToastDiff.cs, Labels.cs}
+                  (pure C#: no UnityEngine, no game types; unit-tested)
+    Core/{AchievementReader.cs, ProgressCache.cs, Pins.cs, StatEvents.cs, CheatState.cs,
+          ConsoleCommands.cs}
+    Patches/{DetailsPatches.cs, StatPatches.cs, ListPatches.cs}
+  tests/Milestones.Tests/   (net8.0 xUnit; compiles Core/Model/*.cs by link)
     UI/{ProgressRow.cs, PinButton.cs, TrackerHud.cs, Toasts.cs, UiUtil.cs}
 ```
 
@@ -245,15 +252,18 @@ Milestones/
 4. HUD tracker with live updates (pick a berry, watch it move).
 5. Toasts, config polish, README with screenshots, package 0.1.0.
 
-**Testing:** there are no automated tests, as in the sibling mods. Each step is checked on the rig:
-the `Progress` numbers against vanilla's `achievements` console command, the UI with
-`build/shot.sh` captures, and live behavior through the console dumps in the BepInEx log
-(`build/logs.sh`).
+**Testing:** the pure model in `Core/Model/` (progress math, operators, lenient formula, pin
+list, toast diffing, label fallback) has no Unity or game dependency. It is unit-tested by a
+net8.0 xUnit project that compiles those files by link, and runs on the build box with
+`dotnet test`. Mono isn't installed there, so the net472 plugin itself can't be run in tests.
+Everything that touches Unity or the game is checked on the rig: the numbers against vanilla's
+`achievements` console command, the UI with `build/shot.sh` captures, and live behavior through
+the console dumps in the BepInEx log (`build/logs.sh`).
 
 ## 5. Open questions / to verify on the rig
 
-- Whether the tracker and vanilla TopLeft messages coexist cleanly (§2.5), or whether toasts
-  should default to `Center`.
+- Whether toasts get lost in the top-left pickup feed during heavy looting (§2.5). If so,
+  `ToastPosition = Center` becomes the default.
 - Whether anything in the Mods profile sets `Game.isModded`. The BepInEx log prints
   `isModded: …` at `Game` start (Game.cs:274). If it is true, achievement stats are not
   recording at all, and no mod can show progress that the game isn't counting.
