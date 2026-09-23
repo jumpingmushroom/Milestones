@@ -1,4 +1,5 @@
 using Milestones.Core.Model;
+using UnityEngine;
 
 namespace Milestones.Core
 {
@@ -24,6 +25,9 @@ namespace Milestones.Core
                     {
                         case "":
                             Summary(args.Context);
+                            break;
+                        case "ui":
+                            DumpUi(args.Context);
                             break;
                         default:
                             Detail(args.Context, string.Join(" ", args.Args, 1, args.Length - 1));
@@ -75,6 +79,38 @@ namespace Milestones.Core
                 Say(ctx, string.Format("Milestones:   {0} {1} [{2} {3}] {4} {5}",
                     o.Met ? "[x]" : "[ ]", o.Label, o.Source, o.Key, o.Op, Labels.ProgressText(o)));
             }
+        }
+
+        private static void DumpUi(Terminal ctx)
+        {
+            InventoryGui inv = InventoryGui.instance;
+            if (inv == null || inv.m_achievementsPanel == null)
+            {
+                Say(ctx, "Milestones: no achievements panel.");
+                return;
+            }
+            Dump(ctx, inv.m_achievementsPanel.m_achievementDetails.transform, 0, 3);
+            if (inv.m_achievementsPanel.m_achievementDetailsElementPrefab != null)
+                Dump(ctx, inv.m_achievementsPanel.m_achievementDetailsElementPrefab.transform, 0, 3);
+        }
+
+        private static void Dump(Terminal ctx, Transform t, int depth, int maxDepth)
+        {
+            var rt = t as RectTransform;
+            var comps = new System.Text.StringBuilder();
+            foreach (Component c in t.GetComponents<Component>())
+            {
+                if (c != null && !(c is Transform))
+                    comps.Append(c.GetType().Name).Append(' ');
+            }
+            Say(ctx, string.Format("Milestones: {0}{1} active={2} size={3} anchors={4}-{5} pos={6} [{7}]",
+                new string(' ', depth * 2), t.name, t.gameObject.activeSelf,
+                rt != null ? rt.rect.size.ToString() : "-", rt != null ? rt.anchorMin.ToString() : "-",
+                rt != null ? rt.anchorMax.ToString() : "-", rt != null ? rt.anchoredPosition.ToString() : "-", comps));
+            if (depth >= maxDepth)
+                return;
+            foreach (Transform child in t)
+                Dump(ctx, child, depth + 1, maxDepth);
         }
     }
 }
