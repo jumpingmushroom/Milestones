@@ -31,6 +31,9 @@ namespace Milestones
             Log = Logger;
             PluginConfig.Bind(base.Config);
             ConsoleCommands.Register();
+            Pins.Init();
+            UI.PinButton.Init();
+            UI.ListMarks.Init();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(MilestonesPlugin).Assembly);

@@ -29,6 +29,10 @@ namespace Milestones.Core
                         case "ui":
                             DumpUi(args.Context);
                             break;
+                        case "pin":
+                        case "unpin":
+                            PinCommand(args.Context, sub.ToLowerInvariant() == "pin", rest);
+                            break;
                         default:
                             Detail(args.Context, string.Join(" ", args.Args, 1, args.Length - 1));
                             break;
@@ -43,8 +47,22 @@ namespace Milestones.Core
             MilestonesPlugin.Log.LogInfo(line);
         }
 
+        private static void PinCommand(Terminal ctx, bool pin, string query)
+        {
+            Achievement a = AchievementReader.Find(query);
+            if (a == null)
+            {
+                Say(ctx, "Milestones: no achievement matches \"" + query + "\".");
+                return;
+            }
+            bool ok = pin ? Pins.Pin(a.m_id) : Pins.Unpin(a.m_id);
+            Say(ctx, "Milestones: " + (ok ? (pin ? "pinned " : "unpinned ") : "unchanged ") + a.m_id +
+                " (" + Pins.Count + "/" + PinList.Max + ")" + (!ok && pin && Pins.IsFull ? " — three pins already" : ""));
+        }
+
         private static void Summary(Terminal ctx)
         {
+            Say(ctx, "Milestones: pinned = " + (Pins.Count == 0 ? "(none)" : string.Join(", ", Pins.Ids)));
             string paused = CheatState.PausedReason();
             if (paused != null)
                 Say(ctx, "Milestones: achievements paused: " + paused);

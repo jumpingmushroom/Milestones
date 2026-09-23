@@ -40,6 +40,7 @@ namespace Milestones.Core
                 return;
 
             float now = Now;
+            Pins.Tick(now);
             if (now >= _nextDirty)
             {
                 _nextDirty = now + DirtyInterval;
