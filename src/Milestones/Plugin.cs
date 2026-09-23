@@ -35,6 +35,7 @@ namespace Milestones
             UI.PinButton.Init();
             UI.ListMarks.Init();
             UI.TrackerHud.Init();
+            UI.Toasts.Init();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(MilestonesPlugin).Assembly);
