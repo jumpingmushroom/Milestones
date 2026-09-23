@@ -7,7 +7,7 @@
   "do everything once" achievements, average fill otherwise, the game's own 1.15x rule for the
   lenient build achievements). Unfinished objectives sort to the top. Achievements that require
   other achievements now list them.
-- Pin up to three achievements per character from the details panel (Y on a gamepad). A HUD
+- Pin up to three achievements per character from the details panel (X on a gamepad). A HUD
   tracker under the status-effect icons shows them and moves as you play. Large achievements
   show the four unfinished objectives closest to done. Unlocked pins clear themselves after ten
   seconds.

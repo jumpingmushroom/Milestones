@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Milestones.Core;
 using Milestones.Core.Model;
@@ -81,8 +82,18 @@ namespace Milestones.UI
                 return;
             RectTransform holder = UiUtil.Rect("MilestonesTracker", hud.m_rootObject.transform);
             UiUtil.Stretch(holder);
-            _instance = holder.gameObject.AddComponent<TrackerHud>();
-            _instance.Build();
+            TrackerHud tracker = holder.gameObject.AddComponent<TrackerHud>();
+            try
+            {
+                tracker.Build();
+            }
+            catch (Exception e)
+            {
+                MilestonesPlugin.WarnOnce("tracker", e);
+                Destroy(holder.gameObject);
+                return;
+            }
+            _instance = tracker;
             _dirty = true;
         }
 
@@ -118,32 +129,39 @@ namespace Milestones.UI
 
         private void LateUpdate()
         {
-            bool show = PluginConfig.Enabled.Value && PluginConfig.ShowTracker.Value && Pins.Count > 0
-                && Player.m_localPlayer != null
-                && !(PluginConfig.HideWhenInventoryOpen.Value && InventoryGui.IsVisible());
-            if (_panel.gameObject.activeSelf != show)
-                _panel.gameObject.SetActive(show);
-            if (!show)
-                return;
-
-            if (_dirty)
+            try
             {
-                _dirty = false;
-                Refresh();
-            }
-            if (Runtime.Now >= _nextPausedCheck)
-            {
-                _nextPausedCheck = Runtime.Now + 1f;
-                string reason = CheatState.PausedReason();
-                _paused.gameObject.SetActive(reason != null);
-                if (reason != null)
-                    _paused.text = "Achievements paused: " + reason;
-            }
+                bool show = PluginConfig.Enabled.Value && PluginConfig.ShowTracker.Value && Pins.Count > 0
+                    && Player.m_localPlayer != null
+                    && !(PluginConfig.HideWhenInventoryOpen.Value && InventoryGui.IsVisible());
+                if (_panel.gameObject.activeSelf != show)
+                    _panel.gameObject.SetActive(show);
+                if (!show)
+                    return;
 
-            _group.alpha = PluginConfig.Opacity.Value;
-            _panel.sizeDelta = new Vector2(PluginConfig.Width.Value, _panel.sizeDelta.y);
-            _panel.localScale = Vector3.one * PluginConfig.Scale.Value;
-            Place();
+                if (_dirty)
+                {
+                    _dirty = false;
+                    Refresh();
+                }
+                if (Runtime.Now >= _nextPausedCheck)
+                {
+                    _nextPausedCheck = Runtime.Now + 1f;
+                    string reason = CheatState.PausedReason();
+                    _paused.gameObject.SetActive(reason != null);
+                    if (reason != null)
+                        _paused.text = "Achievements paused: " + reason;
+                }
+
+                _group.alpha = PluginConfig.Opacity.Value;
+                _panel.sizeDelta = new Vector2(PluginConfig.Width.Value, _panel.sizeDelta.y);
+                _panel.localScale = Vector3.one * PluginConfig.Scale.Value;
+                Place();
+            }
+            catch (Exception e)
+            {
+                MilestonesPlugin.WarnOnce("tracker", e);
+            }
         }
 
         private void Place()

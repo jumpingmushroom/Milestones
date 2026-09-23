@@ -26,6 +26,7 @@ namespace Milestones.Core
         {
             ById.Clear();
             Indexes.Clear();
+            AchievementReader.ClearLabels();
         }
 
         public static AchievementProgress Get(Achievement a)

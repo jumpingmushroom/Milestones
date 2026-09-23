@@ -6,7 +6,8 @@ namespace Milestones.Core
     /// <summary>
     /// Per-frame driver, from MilestonesPlugin.Update. Notices a new local player, drains stat
     /// marks at most four times a second, and does a full refresh every ten seconds for stats the
-    /// patches don't see. Idle frames cost two float compares.
+    /// patches don't see. Idle frames do a few compares and the Ticked handlers; recomputes
+    /// happen only when stats changed.
     /// </summary>
     internal static class Runtime
     {
@@ -24,36 +25,45 @@ namespace Milestones.Core
 
         public static void Tick()
         {
-            Player p = Player.m_localPlayer;
-            if (p != _player)
+            try
             {
-                _player = p;
-                ProgressCache.Clear();
-                if (p != null && Achievements.m_instance != null)
+                Player p = Player.m_localPlayer;
+                // A null player always commits; a new one only once Achievements exists, so its
+                // PlayerSpawned handlers have somewhere to read from. Otherwise retry next frame.
+                if (p != _player && (p == null || Achievements.m_instance != null))
                 {
-                    MilestonesPlugin.Log.LogInfo("Milestones: player spawned; Game.isModded = " + Game.isModded);
-                    if (PlayerSpawned != null)
-                        PlayerSpawned(p);
+                    _player = p;
+                    ProgressCache.Clear();
+                    if (p != null)
+                    {
+                        MilestonesPlugin.Log.LogInfo("Milestones: player spawned; Game.isModded = " + Game.isModded);
+                        if (PlayerSpawned != null)
+                            PlayerSpawned(p);
+                    }
                 }
-            }
-            if (_player == null || !PluginConfig.Enabled.Value)
-                return;
+                if (_player == null || !PluginConfig.Enabled.Value)
+                    return;
 
-            float now = Now;
-            Pins.Tick(now);
-            if (now >= _nextDirty)
-            {
-                _nextDirty = now + DirtyInterval;
-                if (StatEvents.Any)
-                    ProgressCache.ProcessDirty();
+                float now = Now;
+                Pins.Tick(now);
+                if (now >= _nextDirty)
+                {
+                    _nextDirty = now + DirtyInterval;
+                    if (StatEvents.Any)
+                        ProgressCache.ProcessDirty();
+                }
+                if (now >= _nextSweep)
+                {
+                    _nextSweep = now + SweepInterval;
+                    ProgressCache.RefreshAll();
+                }
+                if (Ticked != null)
+                    Ticked();
             }
-            if (now >= _nextSweep)
+            catch (Exception e)
             {
-                _nextSweep = now + SweepInterval;
-                ProgressCache.RefreshAll();
+                MilestonesPlugin.WarnOnce("tick", e);
             }
-            if (Ticked != null)
-                Ticked();
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Milestones.UI
 {
     /// <summary>
     /// "Pin (1/3)" / "Unpin" beside the details panel's close button, cloned from it so it matches
-    /// the game's style. Gamepad: Y while the details panel is open.
+    /// the game's style. Gamepad: X while the details panel is open.
     /// </summary>
     internal static class PinButton
     {
@@ -28,7 +28,19 @@ namespace Milestones.UI
             _for = a;
             if (_button == null)
                 Create(gui);
+            if (_button != null)
+                _button.gameObject.SetActive(true);
             Refresh();
+        }
+
+        /// <summary>
+        /// Hides the clone on close/abort, so a details panel vanilla builds later (Enabled off,
+        /// or after Failed) doesn't leave it on screen toggling a different achievement.
+        /// </summary>
+        internal static void Hide()
+        {
+            if (_button != null)
+                _button.gameObject.SetActive(false);
         }
 
         private static Button FindCloseButton(AchievementsGui gui)
@@ -77,7 +89,7 @@ namespace Milestones.UI
 
         private static void OnClick()
         {
-            if (_for != null)
+            if (_for != null && _for == DetailsPanel.Current)
                 Pins.Toggle(_for);
         }
 
@@ -94,7 +106,7 @@ namespace Milestones.UI
         {
             if (DetailsPanel.Current == null || _for != DetailsPanel.Current)
                 return;
-            if (ZInput.IsGamepadActive() && ZInput.GetButtonDown("JoyButtonY") && _button != null && _button.interactable)
+            if (ZInput.IsGamepadActive() && ZInput.GetButtonDown("JoyButtonX") && _button != null && _button.interactable)
                 OnClick();
         }
     }

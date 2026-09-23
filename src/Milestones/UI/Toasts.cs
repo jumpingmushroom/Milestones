@@ -20,6 +20,9 @@ namespace Milestones.UI
             PluginConfig.Thresholds.SettingChanged += (s, e) => _rules = null;
             PluginConfig.PinnedToasts.SettingChanged += (s, e) => _rules = null;
             PluginConfig.UnpinnedToasts.SettingChanged += (s, e) => _rules = null;
+            // Recomputing under a new mode changes every value; re-snapshot first so the
+            // switch itself doesn't read as progress and toast.
+            PluginConfig.Overall.SettingChanged += (s, e) => { ProgressCache.Clear(); Reset(); };
         }
 
         private static ToastRules Rules

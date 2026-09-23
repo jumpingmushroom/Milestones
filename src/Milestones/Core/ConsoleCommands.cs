@@ -89,6 +89,11 @@ namespace Milestones.Core
             }
             ProgressCache.Recompute(a);
             AchievementProgress p = ProgressCache.Get(a);
+            if (p == null)
+            {
+                Say(ctx, "Milestones: no profile loaded.");
+                return;
+            }
             Say(ctx, string.Format("Milestones: {0} \"{1}\" slot={2} lenient={3} overall={4} {5}",
                 a.m_id, AchievementReader.Name(a), a.m_difficultyRequirement, a.m_lenientBuildAchievement,
                 Labels.OverallText(p), p.Unlocked ? "UNLOCKED" : ""));

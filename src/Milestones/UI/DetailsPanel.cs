@@ -150,6 +150,7 @@ namespace Milestones.UI
             Current = null;
             _header = null;
             Rows.Clear();
+            PinButton.Hide();
         }
 
         /// <summary>Undo a half-built panel so vanilla can build its own (it bails out if the panel is active).</summary>
@@ -161,6 +162,7 @@ namespace Milestones.UI
             gui.m_achievementDetails.SetActive(false);
             _header = null;
             Rows.Clear();
+            PinButton.Hide();
         }
     }
 }

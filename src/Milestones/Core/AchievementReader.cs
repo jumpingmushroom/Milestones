@@ -12,6 +12,12 @@ namespace Milestones.Core
     {
         private static readonly Dictionary<string, string> LabelCache = new Dictionary<string, string>();
 
+        /// <summary>Clears cached localized labels, so a language switch is picked up on the next login.</summary>
+        internal static void ClearLabels()
+        {
+            LabelCache.Clear();
+        }
+
         public static IEnumerable<Achievement> All()
         {
             Achievements inst = Achievements.m_instance;
