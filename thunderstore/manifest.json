@@ -1,0 +1,9 @@
+{
+  "name": "Milestones",
+  "version_number": "0.1.0",
+  "website_url": "https://github.com/jumpingmushroom/Milestones",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ],
+  "description": "Real progress for Valheim's achievements: bars and numbers instead of ??? / ???, a pinned HUD tracker that updates as you play, and progress toasts. Client-side."
+}

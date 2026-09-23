@@ -1,8 +1,8 @@
-"""Thunderstore icon: 256x256 PNG. An inventory slot in miniature: a dark plate with a golden
-border, a potion-red disc for the item, a dark radial sweep covering the part of the cooldown
-still to run, and a big "12" countdown in the middle. Written without PIL, which the build box
-lacks. Run from the repo root: python3 build/make_icon.py"""
-import math
+"""Thunderstore icon: 256x256 PNG. A dark plate with a golden border, three stacked progress
+bars (done / in progress / not started, matching the mod's own bar colours) over dark tracks,
+and a small amber pin triangle in the top-right corner standing for the pinned-achievement
+tracker. Written without PIL, which the build box lacks.
+Run from the repo root: python3 build/make_icon.py"""
 import struct
 import zlib
 
@@ -30,75 +30,41 @@ def rounded_rect(x0, y0, x1, y1, rad, col, alpha=1.0):
             if dx * dx + dy * dy <= rad * rad:
                 blend(x, y, *col, alpha)
 
-def rect(x0, y0, x1, y1, col, alpha=1.0):
-    for y in range(int(y0), int(y1)):
-        for x in range(int(x0), int(x1)):
-            blend(x, y, *col, alpha)
+def corner_triangle(x1, y0, size, col, alpha=1.0):
+    """Right triangle with its right angle at (x1, y0) — a small corner marker standing in
+    for a pin. Built from per-row rects, so it is `rounded_rect` (rad=0) called row by row."""
+    for i in range(int(size)):
+        w = size - i
+        rounded_rect(x1 - w, y0 + i, x1, y0 + i + 1, 0, col, alpha)
 
-def disc(cx, cy, rad, col, alpha=1.0):
-    for y in range(int(cy - rad), int(cy + rad) + 1):
-        for x in range(int(cx - rad), int(cx + rad) + 1):
-            if (x - cx) ** 2 + (y - cy) ** 2 <= rad * rad:
-                blend(x, y, *col, alpha)
+PLATE = (0x1c, 0x1a, 0x17)
+BORDER = (0xc8, 0xa0, 0x50)
+TRACK = (0x00, 0x00, 0x00)
+DONE = (0x5a, 0xc8, 0x5a)
+PROGRESS = (0xe0, 0xa0, 0x30)
+PIN = (0xe0, 0xa0, 0x30)
 
-def sweep(x0, y0, x1, y1, frac, col, alpha):
-    """Darken the fraction of the square still to run, measured clockwise from the top."""
-    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    for y in range(int(y0), int(y1)):
-        for x in range(int(x0), int(x1)):
-            ang = math.atan2(x - cx, cy - y)          # 0 at top, clockwise positive
-            if ang < 0:
-                ang += 2 * math.pi
-            if ang >= (1 - frac) * 2 * math.pi:
-                blend(x, y, *col, alpha)
+# dark plate, golden border (drawn as a larger border-coloured rect showing only at the edge)
+border_w = 10 * SS
+rounded_rect(0, 0, W, W, 34 * SS, BORDER)
+rounded_rect(border_w, border_w, W - border_w, W - border_w, 26 * SS, PLATE)
 
-# 5x7 bitmap digits, drawn as filled cells
-FONT = {
-    "1": ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
-    "2": [".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####"],
-}
+# three stacked progress bars: done, in progress, in progress (100% / 62% / 25%)
+bars = [(1.00, DONE), (0.62, PROGRESS), (0.25, PROGRESS)]
+pad = 34 * SS
+bar_h = 26 * SS
+gap = 20 * SS
+x0, x1 = pad, W - pad
+total_h = len(bars) * bar_h + (len(bars) - 1) * gap
+y = (W - total_h) / 2
+rad = bar_h / 2
+for frac, col in bars:
+    rounded_rect(x0, y, x1, y + bar_h, rad, TRACK, 0.55)
+    rounded_rect(x0, y, x0 + (x1 - x0) * frac, y + bar_h, rad, col)
+    y += bar_h + gap
 
-def glyph(ch, x, y, cell, col, alpha=1.0, pad=0):
-    rows = FONT[ch]
-    for r, row in enumerate(rows):
-        for c, v in enumerate(row):
-            if v == "#":
-                rect(x + c * cell - pad, y + r * cell - pad,
-                     x + (c + 1) * cell + pad, y + (r + 1) * cell + pad, col, alpha)
-
-WOOD_DARK = (34, 25, 18)
-PLATE = (14, 11, 9)
-BORDER = (158, 133, 92)
-POTION = (196, 52, 48)
-POTION_HI = (240, 120, 100)
-GLASS = (90, 140, 170)
-
-# ground and slot
-rounded_rect(0, 0, W, W, 44 * SS, WOOD_DARK)
-m = 22 * SS
-rounded_rect(m, m, W - m, W - m, 10 * SS, BORDER)
-rounded_rect(m + 3 * SS, m + 3 * SS, W - m - 3 * SS, W - m - 3 * SS, 8 * SS, PLATE)
-
-# a potion: round body, glass neck, highlight
-cx, cy = W / 2, W / 2 + 14 * SS
-disc(cx, cy, 58 * SS, POTION)
-rounded_rect(cx - 16 * SS, cy - 92 * SS, cx + 16 * SS, cy - 44 * SS, 5 * SS, GLASS)
-rounded_rect(cx - 22 * SS, cy - 100 * SS, cx + 22 * SS, cy - 86 * SS, 4 * SS, BORDER)
-disc(cx - 22 * SS, cy - 22 * SS, 14 * SS, POTION_HI, 0.55)
-
-# sweep: 40% still to run
-sweep(m + 3 * SS, m + 3 * SS, W - m - 3 * SS, W - m - 3 * SS, 0.40, (0, 0, 0), 0.62)
-
-# "12" with a dark outline
-cell = 14 * SS
-tw = 5 * cell
-gap = 8 * SS
-x0 = W / 2 - (2 * tw + gap) / 2
-y0 = W / 2 - 3.5 * cell
-for ch, x in (("1", x0), ("2", x0 + tw + gap)):
-    glyph(ch, x, y0, cell, (0, 0, 0), 1.0, pad=4 * SS)
-for ch, x in (("1", x0), ("2", x0 + tw + gap)):
-    glyph(ch, x, y0, cell, (255, 250, 200))
+# small amber pin triangle in the top-right corner
+corner_triangle(W - border_w - 4 * SS, border_w + 4 * SS, 56 * SS, PIN)
 
 # downsample
 out = bytearray()
