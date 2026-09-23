@@ -11,6 +11,9 @@ namespace Milestones.Patches
         {
             if (!PluginConfig.Enabled.Value)
                 return true;
+            // A row build failed once this session; stop competing with vanilla for good.
+            if (DetailsPanel.Failed)
+                return true;
             // Same early-outs as vanilla, and locked secrets keep vanilla's ???.
             if (__instance.m_achievementDetails.activeSelf || !clickable)
                 return true;
@@ -24,6 +27,7 @@ namespace Milestones.Patches
             catch (Exception e)
             {
                 MilestonesPlugin.WarnOnce("details panel", e);
+                DetailsPanel.MarkFailed();
                 DetailsPanel.Abort(__instance);
                 return true;
             }

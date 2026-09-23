@@ -19,6 +19,9 @@ namespace Milestones.UI
 
         public static Achievement Current { get; private set; }
 
+        /// <summary>True once a row build has failed; the vanilla panel is used for the rest of the session.</summary>
+        public static bool Failed { get; private set; }
+
         public static event Action<AchievementsGui, Achievement> Opened;
 
         static DetailsPanel()
@@ -54,26 +57,71 @@ namespace Milestones.UI
                 Opened(gui, a);
         }
 
+        /// <summary>Outcome of adding one row, so <see cref="Populate"/> can yield without a try/catch around it.</summary>
+        private enum RowResult { Added, Stop, Failed }
+
         private static IEnumerator Populate(AchievementsGui gui, Achievement a, List<int> order)
         {
             int batch = Math.Max(1, gui.m_detailStatsPerFrame);
             int n = 0;
             foreach (int i in order)
             {
-                if (Current != a || gui == null || !gui.m_achievementDetails.activeSelf)
+                RowResult result = AddRow(gui, a, i);
+                if (result == RowResult.Failed)
+                {
+                    Fail(gui, a);
                     yield break;
-                AchievementProgress p = ProgressCache.Get(a);
-                if (i >= p.Total)
+                }
+                if (result == RowResult.Stop)
                     yield break;
-                var row = new ProgressRow(NewRow(gui), i);
-                row.Show(p.Objectives[i], ease: false);
-                Rows.Add(row);
                 if (++n == batch)
                 {
                     n = 0;
                     yield return null;
                 }
             }
+        }
+
+        /// <summary>
+        /// One row's worth of work (get progress, bounds check, new row, show, track it), wrapped in
+        /// try/catch: C# can't yield inside a try that has a catch, so this can't live in Populate itself.
+        /// </summary>
+        private static RowResult AddRow(AchievementsGui gui, Achievement a, int i)
+        {
+            if (Current != a || gui == null || !gui.m_achievementDetails.activeSelf)
+                return RowResult.Stop;
+            try
+            {
+                AchievementProgress p = ProgressCache.Get(a);
+                if (i >= p.Total)
+                    return RowResult.Stop;
+                var row = new ProgressRow(NewRow(gui), i);
+                row.Show(p.Objectives[i], ease: false);
+                Rows.Add(row);
+                return RowResult.Added;
+            }
+            catch (Exception e)
+            {
+                MilestonesPlugin.WarnOnce("details panel", e);
+                return RowResult.Failed;
+            }
+        }
+
+        /// <summary>A row build failed mid-way: mark it, tear down our half-built panel, and let vanilla rebuild it.</summary>
+        private static void Fail(AchievementsGui gui, Achievement a)
+        {
+            MarkFailed();
+            Abort(gui);
+            gui.OnOpenAchievementDetails(a, true);
+        }
+
+        /// <summary>
+        /// The one place that flips <see cref="Failed"/>, so every failure path (the synchronous
+        /// open, or a later coroutine resumption) agrees and stops competing with vanilla.
+        /// </summary>
+        public static void MarkFailed()
+        {
+            Failed = true;
         }
 
         private static AchievementDetailUnlockCondition NewRow(AchievementsGui gui)
