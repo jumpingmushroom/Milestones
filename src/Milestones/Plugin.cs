@@ -30,6 +30,7 @@ namespace Milestones
         {
             Log = Logger;
             PluginConfig.Bind(base.Config);
+            ConsoleCommands.Register();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(MilestonesPlugin).Assembly);
