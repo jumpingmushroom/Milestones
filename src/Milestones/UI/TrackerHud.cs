@@ -22,6 +22,7 @@ namespace Milestones.UI
 
         private RectTransform _panel;
         private CanvasGroup _group;
+        private Canvas _canvas;
         private readonly Dictionary<string, BlockView> _blocks = new Dictionary<string, BlockView>();
         private TextMeshProUGUI _paused;
         private float _nextPausedCheck;
@@ -58,7 +59,6 @@ namespace Milestones.UI
             };
             Runtime.PlayerSpawned += p => _dirty = true;
             PluginConfig.MaxRowsPerAchievement.SettingChanged += (s, e) => Rebuild();
-            PluginConfig.Width.SettingChanged += (s, e) => Rebuild();
         }
 
         private static void Rebuild()
@@ -112,6 +112,8 @@ namespace Milestones.UI
             _paused = UiUtil.Text(_panel, "paused", 12f, TextAlignmentOptions.Left);
             _paused.color = new Color(0.7f, 0.7f, 0.7f, 0.8f);
             _paused.gameObject.SetActive(false);
+
+            _canvas = GetComponentInParent<Canvas>();
         }
 
         private void LateUpdate()
@@ -151,8 +153,7 @@ namespace Milestones.UI
             if (anchor == TrackerAnchor.UnderStatusEffects)
             {
                 Hud hud = Hud.instance;
-                Canvas canvas = GetComponentInParent<Canvas>();
-                float k = canvas != null ? canvas.rootCanvas.scaleFactor : 1f;
+                float k = _canvas != null ? _canvas.rootCanvas.scaleFactor : 1f;
                 RectTransform root = hud.m_statusEffectListRoot;
                 float right = root.position.x, bottom = root.position.y;
                 foreach (RectTransform se in hud.m_statusEffects)
