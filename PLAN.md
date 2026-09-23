@@ -62,6 +62,9 @@ An achievement is unlocked when **all** of its trigger lists are satisfied
   "every row met" rule. `Piece.CheckLenientBuildAchUnlocked` unlocks them when
   `Σ min(stat_i, 1.15 × req_i) > Σ req_i`. Overdoing one category can make up for another. Their
   overall bar must use that formula, or it will read "70 %" on an achievement that just unlocked.
+  That live check counts pieces standing now (`Piece.m_tagStats`), while the recorded stat is a
+  high-water mark that never decreases, so after demolishing pieces the bar can read higher than
+  the live unlock check.
 - `m_otherAchievementTriggers` (meta achievements) are **not shown at all** by vanilla. We add
   one row per referenced achievement (done / not done).
 
@@ -157,7 +160,8 @@ record AchievementProgress(Achievement A, IReadOnlyList<Objective> Objectives,
 - One button created lazily inside `m_achievementDetails`, cloned from an existing button in that
   panel (the close button) so it inherits the font and sprite. The label reads **Pin (1/3)** or
   **Unpin**. At 3 pins it is disabled, with the tooltip "Unpin one first". Gamepad: bound to
-  a free face button while the details panel is open (to be decided in game, see §5).
+  `JoyButtonX`; `JoyButtonY` is already "close inventory" in `InventoryGui.Update` while the
+  achievements panel is open, so it would fight vanilla.
 - A small pin icon on the grid tiles of pinned achievements (a postfix on
   `InventoryGui.UpdateAchievementsList`), so they are easy to find again.
 - **Storage, per character:** `Player.m_customData["milestones.pins"] = "id1,id2,id3"`

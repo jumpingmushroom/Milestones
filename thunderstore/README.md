@@ -67,4 +67,5 @@ ignored by the game if the mod is removed. Needs no server install.
 Valheim stops counting achievement stats when it detects cheats, a cheated item, world
 modifiers, or another mod setting `Game.isModded` — Milestones only reads that state, it never
 sets it. When this happens the tracker tells you why instead of showing numbers that have
-stopped moving.
+stopped moving. The tracker only shows that line while at least one achievement is pinned;
+`milestones` in the console always reports it.

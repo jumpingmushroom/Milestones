@@ -7,7 +7,8 @@
   instruction.
 - Commit only when asked. Version bumps touch three places together: `PluginVersion` in
   `src/Milestones/Plugin.cs`, `<Version>` in the csproj, and `version_number` in
-  `thunderstore/manifest.json`; `build/package.sh` refuses to package if they disagree.
+  `thunderstore/manifest.json`; `build/package.sh` only checks that `Plugin.cs` and
+  `manifest.json` agree and refuses to package if they don't, so keep the csproj in step by hand.
 
 ## Building and testing
 
