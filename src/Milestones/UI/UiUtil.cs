@@ -56,6 +56,27 @@ namespace Milestones.UI
             }
         }
 
+        private static Material _outlined;
+        private static TMP_FontAsset _outlinedFor;
+
+        /// <summary>
+        /// One shared copy of the font's material with a black outline, so HUD text stays readable
+        /// against a bright sky or snow. Shared rather than per label, which would make a material
+        /// instance for every text object.
+        /// </summary>
+        private static Material Outlined(TMP_FontAsset font)
+        {
+            if (_outlined != null && _outlinedFor == font)
+                return _outlined;
+            _outlined = new Material(font.material);
+            _outlined.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            _outlined.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
+            _outlined.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 1f));
+            _outlined.hideFlags = HideFlags.HideAndDontSave;
+            _outlinedFor = font;
+            return _outlined;
+        }
+
         public static TextMeshProUGUI Text(Transform parent, string name, float size, TextAlignmentOptions align)
         {
             RectTransform rt = Rect(name, parent);
@@ -65,7 +86,10 @@ namespace Milestones.UI
             var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
             TMP_FontAsset font = Font;
             if (font != null)
+            {
                 t.font = font;
+                t.fontSharedMaterial = Outlined(font);
+            }
             rt.gameObject.SetActive(true);
             t.fontSize = size;
             t.alignment = align;

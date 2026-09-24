@@ -103,7 +103,7 @@ namespace Milestones.UI
             _panel.pivot = new Vector2(1f, 1f);
             Image bg = _panel.gameObject.AddComponent<Image>();
             bg.sprite = UiUtil.White;
-            bg.color = new Color(0f, 0f, 0f, 0.45f);
+            bg.color = new Color(0f, 0f, 0f, 0.6f);
             bg.raycastTarget = false;
             _group = _panel.gameObject.AddComponent<CanvasGroup>();
             _group.interactable = false;
@@ -120,7 +120,7 @@ namespace Milestones.UI
             fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-            _paused = UiUtil.Text(_panel, "paused", 12f, TextAlignmentOptions.Left);
+            _paused = UiUtil.Text(_panel, "paused", 13f, TextAlignmentOptions.Left);
             _paused.color = new Color(0.7f, 0.7f, 0.7f, 0.8f);
             _paused.gameObject.SetActive(false);
 
@@ -269,16 +269,16 @@ namespace Milestones.UI
             ile.preferredWidth = ile.minWidth = 20f;
             ile.preferredHeight = ile.minHeight = 20f;
 
-            b.Title = UiUtil.Text(head, "title", 15f, TextAlignmentOptions.Left);
+            b.Title = UiUtil.Text(head, "title", 16f, TextAlignmentOptions.Left);
             b.Title.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
-            b.Overall = UiUtil.Text(head, "overall", 13f, TextAlignmentOptions.Right);
+            b.Overall = UiUtil.Text(head, "overall", 14f, TextAlignmentOptions.Right);
 
             b.OverallBar = Bar.CreateInLayout(b.Root, 6f);
 
             for (int i = 0; i < PluginConfig.MaxRowsPerAchievement.Value; i++)
                 b.Lines.Add(NewLine(b.Root, i));
 
-            b.More = UiUtil.Text(b.Root, "more", 11f, TextAlignmentOptions.Left);
+            b.More = UiUtil.Text(b.Root, "more", 12f, TextAlignmentOptions.Left);
             b.More.color = new Color(0.7f, 0.7f, 0.7f, 1f);
             return b;
         }
@@ -299,9 +299,9 @@ namespace Milestones.UI
             h.childControlWidth = true;
             h.childControlHeight = true;
             h.childForceExpandWidth = false;
-            l.Name = UiUtil.Text(row, "name", 12f, TextAlignmentOptions.Left);
+            l.Name = UiUtil.Text(row, "name", 13f, TextAlignmentOptions.Left);
             l.Name.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
-            l.Value = UiUtil.Text(row, "value", 12f, TextAlignmentOptions.Right);
+            l.Value = UiUtil.Text(row, "value", 13f, TextAlignmentOptions.Right);
 
             l.Bar = Bar.CreateInLayout(l.Root, 3f);
             return l;
