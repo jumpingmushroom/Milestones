@@ -71,10 +71,15 @@ namespace Milestones.UI
             }
             GameObject go = Object.Instantiate(template.gameObject, template.transform.parent);
             go.name = "MilestonesPin";
-            // The clone must not answer the close button's gamepad key or re-localize our label.
+            // The clone must not answer the close button's gamepad key, show its gamepad glyph
+            // (the hint is only kept in step by the UIGamePad removed here), or re-localize our label.
             foreach (Component c in go.GetComponentsInChildren<Component>(true))
             {
-                if (c != null && (c is UIGamePad || c.GetType().Name == "Localize"))
+                if (c == null)
+                    continue;
+                if (c.GetType().Name == "UIInputHint")
+                    Object.Destroy(c.gameObject);
+                else if (c is UIGamePad || c.GetType().Name == "Localize")
                     Object.Destroy(c);
             }
             _button = go.GetComponent<Button>();

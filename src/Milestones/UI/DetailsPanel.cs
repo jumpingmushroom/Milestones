@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Milestones.Core;
 using Milestones.Core.Model;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Milestones.UI
 {
@@ -13,7 +14,14 @@ namespace Milestones.UI
     /// </summary>
     internal static class DetailsPanel
     {
+        // Vanilla lays the rows out in a GridLayoutGroup with fixed 24 px cells, which leaves no room
+        // for the bar under the text. The cell grows while our panel is open and is put back on close,
+        // so the vanilla fallback panel keeps its own spacing.
+        private const float ExtraRowHeight = 8f;
+
         private static AchievementsGui _gui;
+        private static GridLayoutGroup _grid;
+        private static Vector2 _vanillaCell;
         private static ProgressRow _header;
         private static readonly List<ProgressRow> Rows = new List<ProgressRow>();
 
@@ -34,6 +42,7 @@ namespace Milestones.UI
             _gui = gui;
             Current = a;
             Rows.Clear();
+            GrowRows(gui);
             gui.m_achievementDetails.SetActive(true);
 
             ProgressCache.Recompute(a);
@@ -124,6 +133,25 @@ namespace Milestones.UI
             Failed = true;
         }
 
+        private static void GrowRows(AchievementsGui gui)
+        {
+            GridLayoutGroup grid = gui.m_achievementDetailsListRoot.GetComponent<GridLayoutGroup>();
+            if (grid == null)
+                return;
+            if (grid != _grid)
+            {
+                _grid = grid;
+                _vanillaCell = grid.cellSize;
+            }
+            grid.cellSize = new Vector2(_vanillaCell.x, _vanillaCell.y + ExtraRowHeight);
+        }
+
+        private static void RestoreRows()
+        {
+            if (_grid != null)
+                _grid.cellSize = _vanillaCell;
+        }
+
         private static AchievementDetailUnlockCondition NewRow(AchievementsGui gui)
         {
             AchievementDetailUnlockCondition row = UnityEngine.Object.Instantiate(gui.m_achievementDetailsElementPrefab, gui.m_achievementDetailsListRoot);
@@ -150,6 +178,7 @@ namespace Milestones.UI
             Current = null;
             _header = null;
             Rows.Clear();
+            RestoreRows();
             PinButton.Hide();
         }
 
@@ -162,6 +191,7 @@ namespace Milestones.UI
             gui.m_achievementDetails.SetActive(false);
             _header = null;
             Rows.Clear();
+            RestoreRows();
             PinButton.Hide();
         }
     }

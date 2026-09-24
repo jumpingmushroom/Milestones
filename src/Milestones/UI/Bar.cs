@@ -12,10 +12,13 @@ namespace Milestones.UI
         private float _target;
         private float _shown;
 
-        /// <summary>Pinned to the bottom edge of a row, outside its layout group.</summary>
+        /// <summary>
+        /// Pinned to the bottom edge of a row, outside its layout group. The track is a light tint:
+        /// the usual dark one vanishes on the details panel's dark wood, hiding empty bars.
+        /// </summary>
         public static Bar CreateFloating(RectTransform row, float height, float inset)
         {
-            Bar bar = Build(row, "MilestonesBar");
+            Bar bar = Build(row, "MilestonesBar", new Color(1f, 1f, 1f, 0.12f));
             var rt = (RectTransform)bar.transform;
             rt.anchorMin = new Vector2(0f, 0f);
             rt.anchorMax = new Vector2(1f, 0f);
@@ -29,7 +32,7 @@ namespace Milestones.UI
         /// <summary>A child of a vertical layout group, full width.</summary>
         public static Bar CreateInLayout(Transform parent, float height)
         {
-            Bar bar = Build(parent, "MilestonesBar");
+            Bar bar = Build(parent, "MilestonesBar", new Color(0f, 0f, 0f, 0.55f));
             LayoutElement le = bar.gameObject.AddComponent<LayoutElement>();
             le.minHeight = height;
             le.preferredHeight = height;
@@ -37,12 +40,12 @@ namespace Milestones.UI
             return bar;
         }
 
-        private static Bar Build(Transform parent, string name)
+        private static Bar Build(Transform parent, string name, Color track)
         {
             RectTransform rt = UiUtil.Rect(name, parent);
             Image bg = rt.gameObject.AddComponent<Image>();
             bg.sprite = UiUtil.White;
-            bg.color = new Color(0f, 0f, 0f, 0.55f);
+            bg.color = track;
             bg.raycastTarget = false;
 
             RectTransform fillRt = UiUtil.Rect("fill", rt);

@@ -30,15 +30,18 @@ namespace Milestones.UI
             {
                 if (tiles[i] == null)
                     continue;
-                Transform mark = tiles[i].transform.Find(MarkName);
+                // On the icon's corner: the tile cell is wider than its icon, and a mark on the
+                // cell's corner floats in the gap between tiles.
+                Transform host = tiles[i].transform.Find("icon") ?? tiles[i].transform;
+                Transform mark = host.Find(MarkName);
                 bool pinned = Pins.Contains(order[i].m_id);
                 if (pinned && mark == null)
                 {
-                    RectTransform rt = UiUtil.Rect(MarkName, tiles[i].transform);
+                    RectTransform rt = UiUtil.Rect(MarkName, host);
                     rt.anchorMin = rt.anchorMax = new Vector2(1f, 1f);
-                    rt.pivot = new Vector2(1f, 1f);
-                    rt.anchoredPosition = new Vector2(-4f, -4f);
-                    rt.sizeDelta = new Vector2(12f, 12f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = new Vector2(-6f, -6f);
+                    rt.sizeDelta = new Vector2(14f, 14f);
                     Image img = rt.gameObject.AddComponent<Image>();
                     img.sprite = UiUtil.White;
                     img.color = PluginConfig.ColorInProgress.Value;
