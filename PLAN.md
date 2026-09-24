@@ -159,7 +159,9 @@ record AchievementProgress(Achievement A, IReadOnlyList<Objective> Objectives,
 
 - One button created lazily inside `m_achievementDetails`, cloned from an existing button in that
   panel (the close button) so it inherits the font and sprite. The label reads **Pin (1/3)** or
-  **Unpin**. At 3 pins it is disabled, with the tooltip "Unpin one first". Gamepad: bound to
+  **Unpin**. At 3 pins it is disabled and its label reads **Unpin one first (3/3)**; a label
+  rather than a tooltip, since the cloned close button carries no tooltip component and a
+  label also reads on a gamepad, where nothing hovers (user decision, 2026-09-24). Gamepad: bound to
   `JoyButtonX`; `JoyButtonY` is already "close inventory" in `InventoryGui.Update` while the
   achievements panel is open, so it would fight vanilla.
 - A small pin icon on the grid tiles of pinned achievements (a postfix on
@@ -271,9 +273,7 @@ the console dumps in the BepInEx log (`build/logs.sh`).
 - Whether anything in the Mods profile sets `Game.isModded`. The BepInEx log prints
   `isModded: …` at `Game` start (Game.cs:274). If it is true, achievement stats are not
   recording at all, and no mod can show progress that the game isn't counting.
-- The detail row prefab's height and layout group: whether a bar fits under the labels or the
-  row needs a `LayoutElement.preferredHeight` bump. `milestones ui` will tell.
-- Which gamepad button to use for Pin in the details panel without clashing with vanilla (B closes).
+- Gamepad `JoyButtonX` for Pin (§2.3) is unverified: no gamepad on the rig yet.
 - How the vanilla `$stat_*` tokens cover all ~205 `PlayerStatType` values. Missing ones fall
   back to CamelCase splitting.
 - Compatibility with mods that restyle the inventory or achievements panel. Everything is
