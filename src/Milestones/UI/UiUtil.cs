@@ -59,10 +59,14 @@ namespace Milestones.UI
         public static TextMeshProUGUI Text(Transform parent, string name, float size, TextAlignmentOptions align)
         {
             RectTransform rt = Rect(name, parent);
+            // Added while inactive so TMP's Awake runs after the font is set; otherwise it looks
+            // for its default LiberationSans (not shipped with the game) and logs a warning.
+            rt.gameObject.SetActive(false);
             var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
             TMP_FontAsset font = Font;
             if (font != null)
                 t.font = font;
+            rt.gameObject.SetActive(true);
             t.fontSize = size;
             t.alignment = align;
             t.textWrappingMode = TextWrappingModes.NoWrap;
