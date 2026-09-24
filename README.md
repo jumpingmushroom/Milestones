@@ -5,6 +5,14 @@ Real progress for Valheim's achievements. The vanilla details panel hides everyt
 the whole time, pins the achievements you care about to the HUD, and tells you in the game's
 own message feed when you get closer.
 
+![Achievement details with progress bars](docs/images/details.jpg)
+
+*The details panel: every objective with its bar and numbers, unfinished ones first. The amber mark on the tile shows the achievement is pinned.*
+
+![Pinned achievements on the HUD](docs/images/tracker.jpg)
+
+*The tracker under the status effects: three pinned achievements, updating as you play. Large ones show the objectives closest to done, then how many are left.*
+
 ## Features
 
 - **Real numbers in the details panel.** Every objective gets a bar, `current / total` and a
