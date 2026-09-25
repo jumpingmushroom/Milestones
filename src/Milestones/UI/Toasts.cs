@@ -60,7 +60,11 @@ namespace Milestones.UI
             Seen[a.m_id] = Snapshot.Take(now);
             if (before == null || !PluginConfig.Enabled.Value)
                 return;
-            string line = ToastDiff.Diff(before, now, AchievementReader.Name(a), Pins.Contains(a.m_id), Rules);
+            bool pinned = Pins.Contains(a.m_id);
+            // The game hides a locked secret's name; don't spoil it unless the player pinned it.
+            if (a.m_isSecret && !a.m_unlocked && !pinned)
+                return;
+            string line = ToastDiff.Diff(before, now, AchievementReader.Name(a), pinned, Rules);
             if (line == null || MessageHud.instance == null)
                 return;
             MessageHud.MessageType where = PluginConfig.ToastAt.Value == ToastPosition.Center

@@ -111,7 +111,11 @@ namespace Milestones.UI
         {
             if (DetailsPanel.Current == null || _for != DetailsPanel.Current)
                 return;
-            if (ZInput.IsGamepadActive() && ZInput.GetButtonDown("JoyButtonX") && _button != null && _button.interactable)
+            // InventoryGui.Hide() deactivates the achievements panel without CloseDetails, so
+            // Current outlives the panel; X is also the default interact key in the world.
+            if (_button == null || !_button.gameObject.activeInHierarchy)
+                return;
+            if (ZInput.IsGamepadActive() && ZInput.GetButtonDown("JoyButtonX") && _button.interactable)
                 OnClick();
         }
     }
