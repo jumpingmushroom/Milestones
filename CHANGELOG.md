@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Gamepad X no longer pins or unpins an achievement after the inventory was closed with its
+  details open. X is the default interact key, so using things in the world could toggle it.
+- Progress toasts no longer name locked secret achievements, unless you pinned one yourself.
+
 ## 0.1.0 — first cut
 
 - The achievement details panel shows every objective with a bar, `current / total` and a

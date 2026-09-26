@@ -19,7 +19,7 @@ namespace Milestones
     {
         public const string PluginGuid = "com.jumpingmushroom.milestones";
         public const string PluginName = "Milestones";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "0.1.1";
 
         internal static ManualLogSource Log;
 

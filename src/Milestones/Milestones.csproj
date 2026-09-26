@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Milestones</AssemblyName>
     <RootNamespace>Milestones</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Real progress bars for Valheim's achievements, a pinned tracker and progress toasts.</Description>
   </PropertyGroup>
 
