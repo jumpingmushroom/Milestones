@@ -27,6 +27,7 @@ namespace Milestones.Core
             ById.Clear();
             Indexes.Clear();
             AchievementReader.ClearLabels();
+            PlatformUnlocks.Clear();
         }
 
         public static AchievementProgress Get(Achievement a)
@@ -86,7 +87,9 @@ namespace Milestones.Core
             PlayerProfile profile = Game.instance != null ? Game.instance.GetPlayerProfile() : null;
             if (profile == null)
                 return null;
-            return ProgressCalc.Compute(a.m_id, AchievementReader.Read(a, profile), a.m_unlocked,
+            // Unlocked on Steam counts as done even when this character's own stats fall short.
+            bool unlocked = a.m_unlocked || PlatformUnlocks.IsUnlocked(a);
+            return ProgressCalc.Compute(a.m_id, AchievementReader.Read(a, profile), unlocked,
                 a.m_lenientBuildAchievement, PluginConfig.Overall.Value);
         }
 

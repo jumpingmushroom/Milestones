@@ -60,6 +60,15 @@ namespace Milestones.UI
             };
             Runtime.PlayerSpawned += p => _dirty = true;
             PluginConfig.MaxRowsPerAchievement.SettingChanged += (s, e) => Rebuild();
+            PluginConfig.TextOutline.SettingChanged += (s, e) => Restyle();
+        }
+
+        /// <summary>The blocks are rebuilt with the new text material; the paused line is kept, so it is restyled in place.</summary>
+        private static void Restyle()
+        {
+            if (_instance != null && _instance._paused != null && _instance._paused.font != null)
+                _instance._paused.fontSharedMaterial = UiUtil.TextMaterial(_instance._paused.font);
+            Rebuild();
         }
 
         private static void Rebuild()

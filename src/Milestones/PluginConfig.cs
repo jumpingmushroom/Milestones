@@ -38,6 +38,7 @@ namespace Milestones
         public static ConfigEntry<float> Scale;
         public static ConfigEntry<float> Opacity;
         public static ConfigEntry<float> Width;
+        public static ConfigEntry<float> TextOutline;
         public static ConfigEntry<int> MaxRowsPerAchievement;
         public static ConfigEntry<bool> HideWhenInventoryOpen;
         public static ConfigEntry<bool> AutoUnpinCompleted;
@@ -112,6 +113,13 @@ namespace Milestones
 
             Width = cfg.Bind("Tracker", "Width", 260f,
                 new ConfigDescription("Width in HUD pixels before scaling.", new AcceptableValueRange<float>(160f, 500f), Attr(72)));
+
+            TextOutline = cfg.Bind("Tracker", "TextOutline", 0.15f,
+                new ConfigDescription(
+                    "Width of the black outline around tracker text, for reading against a bright sky. " +
+                    "0 turns it off and uses the game font's plain material. Lower it if the text looks " +
+                    "dark or smudged.",
+                    new AcceptableValueRange<float>(0f, 0.5f), Attr(71)));
 
             MaxRowsPerAchievement = cfg.Bind("Tracker", "MaxRowsPerAchievement", 4,
                 new ConfigDescription(

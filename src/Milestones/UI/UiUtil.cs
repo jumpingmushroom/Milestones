@@ -58,22 +58,34 @@ namespace Milestones.UI
 
         private static Material _outlined;
         private static TMP_FontAsset _outlinedFor;
+        private static float _outlinedWidth;
 
         /// <summary>
-        /// One shared copy of the font's material with a black outline, so HUD text stays readable
-        /// against a bright sky or snow. Shared rather than per label, which would make a material
-        /// instance for every text object.
+        /// The material for our labels: one shared copy of the font's material with a black outline,
+        /// so HUD text stays readable against a bright sky or snow. Shared rather than per label,
+        /// which would make a material instance for every text object. TMP centres the outline on
+        /// the glyph edge, so half of it eats into the face; the face is dilated by the full width to
+        /// put the edge back and grow the outline outward instead. Without that, small text keeps a
+        /// sub-pixel face and reads as black. <c>TextOutline</c> 0 uses the font's own material.
         /// </summary>
-        private static Material Outlined(TMP_FontAsset font)
+        public static Material TextMaterial(TMP_FontAsset font)
         {
-            if (_outlined != null && _outlinedFor == font)
+            float width = PluginConfig.TextOutline.Value;
+            if (width <= 0f)
+                return font.material;
+            if (_outlined != null && _outlinedFor == font && _outlinedWidth == width)
                 return _outlined;
+            if (_outlined != null)
+                Object.Destroy(_outlined);
             _outlined = new Material(font.material);
             _outlined.EnableKeyword(ShaderUtilities.Keyword_Outline);
-            _outlined.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
+            _outlined.SetFloat(ShaderUtilities.ID_OutlineWidth, width);
             _outlined.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 1f));
+            if (_outlined.HasProperty(ShaderUtilities.ID_FaceDilate))
+                _outlined.SetFloat(ShaderUtilities.ID_FaceDilate, _outlined.GetFloat(ShaderUtilities.ID_FaceDilate) + width);
             _outlined.hideFlags = HideFlags.HideAndDontSave;
             _outlinedFor = font;
+            _outlinedWidth = width;
             return _outlined;
         }
 
@@ -88,7 +100,7 @@ namespace Milestones.UI
             if (font != null)
             {
                 t.font = font;
-                t.fontSharedMaterial = Outlined(font);
+                t.fontSharedMaterial = TextMaterial(font);
             }
             rt.gameObject.SetActive(true);
             t.fontSize = size;
