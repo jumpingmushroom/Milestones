@@ -266,15 +266,16 @@ Everything that touches Unity or the game is checked on the rig: the numbers aga
 `achievements` console command, the UI with `build/shot.sh` captures, and live behavior through
 the console dumps in the BepInEx log (`build/logs.sh`).
 
-## 5. Open questions / to verify on the rig
+## 5. Rig checks (resolved 2026-10-08)
 
-- Whether toasts get lost in the top-left pickup feed during heavy looting (§2.5). If so,
-  `ToastPosition = Center` becomes the default.
-- Whether anything in the Mods profile sets `Game.isModded`. The BepInEx log prints
-  `isModded: …` at `Game` start (Game.cs:274). If it is true, achievement stats are not
-  recording at all, and no mod can show progress that the game isn't counting.
-- Gamepad `JoyButtonX` for Pin (§2.3) is unverified: no gamepad on the rig yet.
-- How the vanilla `$stat_*` tokens cover all ~205 `PlayerStatType` values. Missing ones fall
-  back to CamelCase splitting.
-- Compatibility with mods that restyle the inventory or achievements panel. Everything is
-  looked up through `AchievementsGui` fields, not hierarchy paths, which should keep it robust.
+- Toasts stay readable in the top-left pickup feed during heavy looting, so `ToastPosition`
+  keeps `TopLeft` as the default (§2.5).
+- The rig logs `isModded: True`. MidnightMods-AchievementEnabler keeps achievement stats
+  recording anyway, and the counts match vanilla's `achievements` command.
+- Gamepad `JoyButtonX` for Pin (§2.3) stays untested: gamepad play is not a focus. It gets
+  looked at if someone files an issue.
+- The vanilla `$stat_*` tokens give readable names on the rig; no CamelCase fallback needed
+  attention.
+- The details panel and tracker work with mods that restyle the inventory and HUD, including
+  one that moves the status effects under the minimap. The `UnderStatusEffects` anchor follows
+  them, and the tracker also works placed in other corners.
